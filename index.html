@@ -110,7 +110,33 @@ function enableNotifications(){if(!("Notification"in window))return $("notifStat
 function checkAlerts(){if(!("Notification"in window)||Notification.permission!=="granted")return;let now=Date.now();db.reminders.filter(x=>!x.done&&x.notifyAt).forEach(r=>{let target=new Date(r.snoozedUntil||r.notifyAt).getTime();if(target<=now&&(!r.lastAlert||now-new Date(r.lastAlert).getTime()>600000)){new Notification("Study Desk: "+r.title,{body:"Check your saved reminder."});r.lastAlert=new Date().toISOString();r.snoozedUntil=null;if(r.repeat==="daily")r.notifyAt=new Date(now+86400000).toISOString().slice(0,16);else if(r.repeat==="weekly")r.notifyAt=new Date(now+604800000).toISOString().slice(0,16);else r.notifyAt="";localStorage.setItem(KEY,JSON.stringify(db))}})}
 function exportData(){let a=document.createElement("a"),u=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:"application/json"}));a.href=u;a.download="study-desk-backup.json";a.click();URL.revokeObjectURL(u)}
 $("importFile").onchange=e=>{let f=e.target.files[0];if(!f)return;f.text().then(t=>{try{let x=JSON.parse(t);if(!x.courses||!x.classes||!x.sessions||!x.reminders)throw 0;db=x;save();alert("Backup imported.")}catch(err){alert("Invalid Study Desk backup.")}});e.target.value=""};
-load();render();showCheckin();setInterval(checkAlerts,30000);document.addEventListener("visibilitychange",()=>{if(!document.hidden){render();showCheckin();checkAlerts()}});
+function seedRegistrationCourses(){
+const registered=[
+["COS201","Computer Programming 1",2],
+["CYB201","Introduction to Cybersecurity and Strategy",2],
+["CYB203","Cybercrime, Law and Countermeasures",2],
+["ENT 211","Entrepreneurship and Innovation",1],
+["GST111","Communication in English I",2],
+["MTH209","Introduction to Numerical Analysis",2],
+["MTU-CYB201","Mathematical Methods 1",2],
+["MTU-CYB205","Linear Algebra I",2],
+["MTU-CYB207","Data Analytics with SPSS",1],
+["MTU-CYB209","Cyber Security and Society",2],
+["MTU-ESM201","Every Student A Musician: Principle I",1],
+["MTU-GST117","Use of Library, Study Skills & Information Communication Technology",1],
+["MTU-ICT201","React JS/AngularJS",0],
+["MTU-PIF201","Introduction to Communication in French III",1],
+["MTU-SDN201","Bible Doctrine I",1],
+["SEN 201","Introduction to Software Engineering",2]
+];
+let added=0;
+registered.forEach(([code,title,unit])=>{
+const exists=db.courses.some(c=>(c.code||"").replace(/\\s+/g,"").toUpperCase()===code.replace(/\\s+/g,"").toUpperCase());
+if(!exists){db.courses.push({id:uid(),unit:String(unit),title,name:title,code,lecturer:"",color:"#8295ff"});added++}
+});
+if(added)localStorage.setItem(KEY,JSON.stringify(db));
+}
+load();seedRegistrationCourses();render();showCheckin();setInterval(checkAlerts,30000);document.addEventListener("visibilitychange",()=>{if(!document.hidden){render();showCheckin();checkAlerts()}});
 </script>
 <script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}));</script>
 </body></html>
