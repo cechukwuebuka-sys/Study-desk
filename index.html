@@ -131,7 +131,7 @@ const registered=[
 ];
 let added=0;
 registered.forEach(([code,title,unit])=>{
-const exists=db.courses.some(c=>(c.code||"").replace(/\\s+/g,"").toUpperCase()===code.replace(/\\s+/g,"").toUpperCase());
+const exists=db.courses.some(c=>(c.code||"").replace(/\s+/g,"").toUpperCase()===code.replace(/\s+/g,"").toUpperCase());
 if(!exists){db.courses.push({id:uid(),unit:String(unit),title,name:title,code,lecturer:"",color:"#8295ff"});added++}
 });
 if(added)localStorage.setItem(KEY,JSON.stringify(db));
